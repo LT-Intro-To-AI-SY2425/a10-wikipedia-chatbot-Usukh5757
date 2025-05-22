@@ -1,4 +1,4 @@
-import re, string, calendar
+import re, string
 from wikipedia import WikipediaPage
 import wikipedia
 from bs4 import BeautifulSoup
@@ -76,102 +76,146 @@ def get_match(
     return match
 
 
-def get_polar_radius(planet_name: str) -> str:
-    """Gets the radius of the given planet
+def get_president_name(country_name: str) -> str:
+    """Gets the name of the president of the given country
 
     Args:
-        planet_name - name of the planet to get radius of
+        country_name - name of the country to get president of
 
     Returns:
-        radius of the given planet
+        name of the president of the given country
     """
-    infobox_text = clean_text(get_first_infobox_text(get_page_html(planet_name)))
-    pattern = r"(?:Polar radius.*?)(?: ?[\d]+ )?(?P<radius>[\d,.]+)(?:.*?)km"
-    error_text = "Page infobox has no polar radius information"
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(country_name)))
+    pattern = r"(?:President)(?:.*?)(?P<president>[\w\s]+)(?:.*?)"
+    error_text = "Page infobox has no president information"
     match = get_match(infobox_text, pattern, error_text)
 
-    return match.group("radius")
+    return match.group("president")
 
 
-def get_birth_date(name: str) -> str:
-    """Gets birth date of the given person
+def get_president_term(country_name: str) -> str:
+    """Gets the term length of the president of a given country
 
     Args:
-        name - name of the person
+        country_name - name of the country
 
     Returns:
-        birth date of the given person
+        term length of the president
     """
-    infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(country_name)))
+    pattern = r"(?:Term\s*of\s*office\s*).*?(\d{4}-\d{4})"
+    error_text = "Page infobox has no term information"
+    match = get_match(infobox_text, pattern, error_text)
+
+    return match.group(1)
+
+
+def get_president_party(country_name: str) -> str:
+    """Gets the political party of the president of a given country
+
+    Args:
+        country_name - name of the country
+
+    Returns:
+        political party of the president
+    """
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(country_name)))
+    pattern = r"(?:Political\s*party\s*).*?([\w\s]+)"
+    error_text = "Page infobox has no political party information"
+    match = get_match(infobox_text, pattern, error_text)
+
+    return match.group(1)
+
+
+def get_president_birth(country_name: str) -> str:
+    """Gets the birthdate of the president of the given country
+
+    Args:
+        country_name - name of the country
+
+    Returns:
+        birthdate of the president
+    """
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(country_name)))
     pattern = r"(?:Born\D*)(?P<birth>\d{4}-\d{2}-\d{2})"
-    error_text = (
-        "Page infobox has no birth information (at least none in xxxx-xx-xx format)"
-    )
+    error_text = "Page infobox has no birth information (at least none in xxxx-xx-xx format)"
     match = get_match(infobox_text, pattern, error_text)
 
     return match.group("birth")
 
 
-# below are a set of actions. Each takes a list argument and returns a list of answers
-# according to the action and the argument. It is important that each function returns a
-# list of the answer(s) and not just the answer itself.
-
-
-def birth_date(matches: List[str]) -> List[str]:
-    """Returns birth date of named person in matches
+def get_president_predecessor(country_name: str) -> str:
+    """Gets the predecessor of the president of the given country
 
     Args:
-        matches - match from pattern of person's name to find birth date of
+        country_name - name of the country
 
     Returns:
-        birth date of named person
+        predecessor of the president
     """
-    return [get_birth_date(" ".join(matches))]
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(country_name)))
+    pattern = r"(?:Predecessor\s*).*?([\w\s]+)"
+    error_text = "Page infobox has no predecessor information"
+    match = get_match(infobox_text, pattern, error_text)
+
+    return match.group(1)
 
 
-def polar_radius(matches: List[str]) -> List[str]:
-    """Returns polar radius of planet in matches
+def get_president_successor(country_name: str) -> str:
+    """Gets the successor of the president of the given country
 
     Args:
-        matches - match from pattern of planet to find polar radius of
+        country_name - name of the country
 
     Returns:
-        polar radius of planet
+        successor of the president
     """
-    return [get_polar_radius(matches[0])]
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(country_name)))
+    pattern = r"(?:Successor\s*).*?([\w\s]+)"
+    error_text = "Page infobox has no successor information"
+    match = get_match(infobox_text, pattern, error_text)
+
+    return match.group(1)
 
 
-# dummy argument is ignored and doesn't matter
-def bye_action(dummy: List[str]) -> None:
-    raise KeyboardInterrupt
+# Define the actions based on specific queries
+def president_name(matches: List[str]) -> List[str]:
+    return [get_president_name(matches[0])]
 
 
-# type aliases to make pa_list type more readable, could also have written:
-# pa_list: List[Tuple[List[str], Callable[[List[str]], List[Any]]]] = [...]
-Pattern = List[str]
-Action = Callable[[List[str]], List[Any]]
+def president_term(matches: List[str]) -> List[str]:
+    return [get_president_term(matches[0])]
 
-# The pattern-action list for the natural language query system. It must be declared
-# here, after all of the function definitions
-pa_list: List[Tuple[Pattern, Action]] = [
-    ("when was % born".split(), birth_date),
-    ("what is the polar radius of %".split(), polar_radius),
-    (["bye"], bye_action),
+
+def president_party(matches: List[str]) -> List[str]:
+    return [get_president_party(matches[0])]
+
+
+def president_birth(matches: List[str]) -> List[str]:
+    return [get_president_birth(matches[0])]
+
+
+def president_predecessor(matches: List[str]) -> List[str]:
+    return [get_president_predecessor(matches[0])]
+
+
+def president_successor(matches: List[str]) -> List[str]:
+    return [get_president_successor(matches[0])]
+
+
+# Define the pattern-action list for the query system
+pa_list: List[Tuple[List[str]]] = [
+    ("who is the president of %".split(), president_name),
+    ("what is the term of the president of %".split(), president_term),
+    ("what is the political party of the president of %".split(), president_party),
+    ("when was the president of % born".split(), president_birth),
+    ("who was the predecessor of the president of %".split(), president_predecessor),
+    ("who is the successor of the president of %".split(), president_successor),
 ]
 
 
 def search_pa_list(src: List[str]) -> List[str]:
-    """Takes source, finds matching pattern and calls corresponding action. If it finds
-    a match but has no answers it returns ["No answers"]. If it finds no match it
-    returns ["I don't understand"].
-
-    Args:
-        source - a phrase represented as a list of words (strings)
-
-    Returns:
-        a list of answers. Will be ["I don't understand"] if it finds no matches and
-        ["No answers"] if it finds a match but no answers
-    """
+    """Takes source, finds matching pattern and calls corresponding action."""
     for pat, act in pa_list:
         mat = match(pat, src)
         if mat is not None:
@@ -182,9 +226,8 @@ def search_pa_list(src: List[str]) -> List[str]:
 
 
 def query_loop() -> None:
-    """The simple query loop. The try/except structure is to catch Ctrl-C or Ctrl-D
-    characters and exit gracefully"""
-    print("Welcome to the movie database!\n")
+    """The query loop to interact with the user."""
+    print("Welcome to the President Info Bot!\n")
     while True:
         try:
             print()
@@ -196,8 +239,5 @@ def query_loop() -> None:
         except (KeyboardInterrupt, EOFError):
             break
 
-    print("\nSo long!\n")
-
-
-# uncomment the next line once you've implemented everything are ready to try it out
+    print("\nGoodbye!\n")
 query_loop()
