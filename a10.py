@@ -203,7 +203,7 @@ def president_successor(matches: List[str]) -> List[str]:
     return [get_president_successor(matches[0])]
 
 
-# Define the pattern-action list for the query system
+
 pa_list: List[Tuple[List[str]]] = [
     ("who is the president of %".split(), president_name),
     ("what is the term of the president of %".split(), president_term),
